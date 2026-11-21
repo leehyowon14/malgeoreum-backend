@@ -1,0 +1,233 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "말걸음 MVP",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/realtime/client-secrets": {
+      "post": {
+        "tags": [
+          "realtime"
+        ],
+        "summary": "WebRTC 한국어 전사 자격증명 발급",
+        "operationId": "issueRealtimeClientSecret",
+        "responses": {
+          "200": {
+            "description": "연결 자격증명",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientSecret"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_Literal__invalid_token___"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "UID별 발급 제한",
+            "headers": {
+              "Retry-After": {
+                "required": true,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_Literal__rate_limited___"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "전사 연결 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_Literal__temporarily_unavailable____transcription_unavailable___"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "firebase": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClientSecret": {
+        "properties": {
+          "client_secret": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Client Secret"
+          },
+          "expires_at": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Expires At",
+            "description": "Unix seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_secret",
+          "expires_at"
+        ],
+        "title": "ClientSecret"
+      },
+      "ErrorDetail_Literal__invalid_token___": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "const": "invalid_token",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "ErrorDetail[Literal['invalid_token']]"
+      },
+      "ErrorDetail_Literal__rate_limited___": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "const": "rate_limited",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "ErrorDetail[Literal['rate_limited']]"
+      },
+      "ErrorDetail_Literal__temporarily_unavailable____transcription_unavailable___": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "temporarily_unavailable",
+              "transcription_unavailable"
+            ],
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "ErrorDetail[Literal['temporarily_unavailable', 'transcription_unavailable']]"
+      },
+      "ErrorResponse_Literal__invalid_token___": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail_Literal__invalid_token___"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse[Literal['invalid_token']]"
+      },
+      "ErrorResponse_Literal__rate_limited___": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail_Literal__rate_limited___"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse[Literal['rate_limited']]"
+      },
+      "ErrorResponse_Literal__temporarily_unavailable____transcription_unavailable___": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail_Literal__temporarily_unavailable____transcription_unavailable___"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse[Literal['temporarily_unavailable', 'transcription_unavailable']]"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "Health"
+      }
+    },
+    "securitySchemes": {
+      "firebase": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Firebase ID token"
+      }
+    }
+  }
+}
